@@ -3,3 +3,5 @@ services:
   collatz:
     build: .
     restart: unless-stopped
+    environment:
+      USE_THREADS: all

@@ -1,10 +1,87 @@
-let crypto = require('crypto');
+const os = require('os');
+const crypto = require('crypto');
+const {Worker, isMainThread, parentPort} = require('worker_threads');
 
-function randomInt(upTo){
-    if (crypto.randomInt){
-        return crypto.randomInt(0, upTo);
-    } else {
-        return Math.floor(Math.random() * upTo);
+const CPU_COUNT = os.cpus().length;
+const THREAD_COUNT = process.env.USE_THREADS === 'all' ? CPU_COUNT : parseInt(process.env.USE_THREADS) || 0;
+
+if (isMainThread) {
+    let bestSolve = 1000;
+    let benchmarkSum = 0;
+    let benchmarkEventsGot = 0;
+    console.log(`start with ${THREAD_COUNT} threads`);
+    for (let i=0; i<THREAD_COUNT; i++){
+        const worker = new Worker(__filename);
+        worker.on('message', (msg) => {
+            let event = msg.event;
+            if (event === 'betterCollatzFound'){
+                let {randomNum,iterationsDone} = msg;
+                if (iterationsDone > bestSolve){
+                    bestSolve = iterationsDone;
+                    console.log(randomNum, iterationsDone);
+                }
+                if (iterationsDone >= 10000){
+                    console.log('epic win! Number is found: ', randomNum);
+                }
+            } else if (event === 'benchmark'){
+                let {speed} = msg;
+                benchmarkSum += speed;
+                benchmarkEventsGot++;
+                if (benchmarkEventsGot === THREAD_COUNT){
+                    console.log(`calculation speed: ${benchmarkSum} tries per second`);
+                }
+            }
+        });
+        worker.on('error', err => {
+            console.error('error', err);
+        });
+        worker.on('exit', code => {
+            console.error('worker exited with code: ', code)
+        });
+    }
+} else {
+    let i = 0;
+    let maxFound = 1000;
+
+    const benchmarkPeriod = 10 * 1000; // 10 sec
+    const benchmarkTime = Date.now() + benchmarkPeriod;
+    let benchmarkMode = true;
+
+    while (true){
+        let random1 = BigInt(randomInt(2**32));
+        let random2 = BigInt(randomInt(2**32)) * 2n**32n;
+        let random3 = BigInt(randomInt(2**32)) * 2n**64n;
+        let randomNum = 2n**96n + random1 + random2 + random3;
+
+        for (let j = 0; j<1000; j++){
+            let iterationsDone = n31(randomNum);
+            if (iterationsDone >= 10000){
+                console.log('epic win! Number is found: ', randomNum);
+            }
+            if (iterationsDone > maxFound){
+                if (!benchmarkMode){
+                    parentPort.postMessage({
+                        event: 'betterCollatzFound',
+                        randomNum,
+                        iterationsDone
+                    });
+
+                }
+                maxFound = iterationsDone;
+            }
+
+            randomNum++;
+            if (benchmarkMode){
+                i++;
+            }
+        }
+        if (benchmarkMode && Date.now() >= benchmarkTime){
+            benchmarkMode = false;
+            parentPort.postMessage({
+                event: 'benchmark',
+                speed: i / (benchmarkPeriod / 1000),
+            });
+        }
     }
 }
 
@@ -21,38 +98,10 @@ function n31(n){
     return iterations;
 }
 
-let i = 0;
-let maxFound = 1000;
-
-const benchmarkPeriod = 10 * 1000; // 10 sec
-const benchmarkTime = Date.now() + benchmarkPeriod;
-let benchmarkMode = true;
-
-while (true){
-    let random1 = BigInt(randomInt(2**32));
-    let random2 = BigInt(randomInt(2**32)) * 2n**32n;
-    let random3 = BigInt(randomInt(2**32)) * 2n**64n;
-    let randomNum = 2n**96n + random1 + random2 + random3;
-
-    for (let j = 0; j<1000; j++){
-        let iterationsDone = n31(randomNum);
-        if (iterationsDone >= 10000){
-            console.log('epic win! Number is found: ', randomNum);
-        }
-        if (iterationsDone > maxFound){
-            if (!benchmarkMode){
-                console.log(randomNum, iterationsDone);
-            }
-            maxFound = iterationsDone;
-        }
-
-        randomNum++;
-        if (benchmarkMode){
-            i++;
-        }
-    }
-    if (benchmarkMode && Date.now() >= benchmarkTime){
-        benchmarkMode = false;
-        console.log('calculation speed: ', i / (benchmarkPeriod / 1000), ' tries per second');
+function randomInt(upTo){
+    if (crypto.randomInt){
+        return crypto.randomInt(0, upTo);
+    } else {
+        return Math.floor(Math.random() * upTo);
     }
 }
