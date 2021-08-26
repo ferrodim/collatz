@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const {Worker, isMainThread, parentPort} = require('worker_threads');
 
 const CPU_COUNT = os.cpus().length;
-const THREAD_COUNT = process.env.USE_THREADS === 'all' ? CPU_COUNT : parseInt(process.env.USE_THREADS) || 0;
+const THREAD_COUNT = process.env.USE_THREADS === 'all' ? CPU_COUNT : parseInt(process.env.USE_THREADS) || 1;
 
 if (isMainThread) {
     let bestSolve = 1000;
