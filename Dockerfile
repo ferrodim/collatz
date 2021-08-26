@@ -1,3 +1,3 @@
 FROM node:16
 ADD index.js .
-CMD node index.js
+CMD nice node index.js
