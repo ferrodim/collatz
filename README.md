@@ -42,3 +42,8 @@ Or start it directly by using docker
 | 104496519615652216669078815554n | 2206 |
 |  93894303919762902633244593695n | 2229 |
 | 102211931259749359959202342206n | 2299 |
+
+## Docker log sample:
+![image](https://github.com/user-attachments/assets/1ab901d8-8a1c-4cd6-a42f-a64d8d0545d2)
+
+
