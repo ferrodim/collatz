@@ -9,6 +9,10 @@ If application will found starting number that have infinite steps - application
 
 Also, application runs "benchmark" on it's own start. Look at something like "calculation speed: 532500 tries per second"
 
+By design, application will run in "nice" mode, i.e. it will use CPU gently, in low priority. But in other hand, it will provide 100% CPU load, so it can be bad for cooling system.
+
+If you start application by docker-compose - it will automatically restart. It will happen because setting "restart: unless-stopped" in docker-compose.yml. Change it by our own, if you want other behavior.
+
 This application created as example, how easy to use long math and multiprocessing on node.js.
 
 ## How to run
