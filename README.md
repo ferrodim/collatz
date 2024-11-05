@@ -7,6 +7,8 @@ Best found starting numbers are displayed in application log. But, only started 
 
 If application will found starting number that have infinite steps - application will check only the first 10k steps, and write in log "epic win! Number is found"
 
+Also, application runs "benchmark" on it's own start. Look at something like "calculation speed: 532500 tries per second"
+
 This application created as example, how easy to use long math and multiprocessing on node.js.
 
 ## How to run
@@ -17,8 +19,8 @@ Or start it directly by using docker
 
 ## Variables
 * USE_THREADS:
-  ** "all" = use same count of threads as CPU cores in system
-  ** any number = use choosen amount of cores
+  * "all" = use same count of threads as CPU cores in system
+  * any number = use choosen amount of cores
 
 ## Best found starting numbers:
 
