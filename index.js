@@ -4,9 +4,12 @@ const {Worker, isMainThread, parentPort} = require('worker_threads');
 
 const CPU_COUNT = os.cpus().length;
 const THREAD_COUNT = process.env.USE_THREADS === 'all' ? CPU_COUNT : parseInt(process.env.USE_THREADS) || 1;
+const MIN_LENGTH_TO_START = 500;
+// const MAX_CHECKED_COLLATZ = 1n; // uncomment if you want to check up to 1
+const MAX_CHECKED_COLLATZ = 2n * (10n**21n); // all numbers bellow 2 * 10**21 already checked, so stop if current num is less
 
 if (isMainThread) {
-    let bestSolve = 1000;
+    let bestSolve = MIN_LENGTH_TO_START;
     let benchmarkSum = 0;
     let benchmarkEventsGot = 0;
     console.log(`start with ${THREAD_COUNT} threads`);
@@ -41,7 +44,7 @@ if (isMainThread) {
     }
 } else {
     let i = 0;
-    let maxFound = 1000;
+    let maxFound = MIN_LENGTH_TO_START;
 
     const benchmarkPeriod = 10 * 1000; // 10 sec
     const benchmarkTime = Date.now() + benchmarkPeriod;
@@ -87,7 +90,8 @@ if (isMainThread) {
 
 function n31(n){
     let iterations = 0;
-    while (n !== 1n && iterations < 10000){
+    while (n > MAX_CHECKED_COLLATZ && iterations < 10000){
+    // while (n !== 1n && iterations < 10000){
         if (n% 2n){
             n = n * 3n + 1n;
         } else {
